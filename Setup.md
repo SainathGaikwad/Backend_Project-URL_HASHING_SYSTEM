@@ -1,4 +1,7 @@
-URLSIZEREDUCER Controller Test Cases
+URLSIZEREDUCER Controller Test Cases   
+
+THE URL TO BE USED IN POSTMAN SHOULD BE OF "POST" TYPE AND URL SHOULD BE "http://localhost:4000/Shorten"
+
 Test Case 1: Valid Input
 1. Input : {
   "originalUrl": "https://example.com",
@@ -43,6 +46,7 @@ Output:{
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
+THE URL TO BE USED IN POSTMAN SHOULD BE OF "GET" TYPE AND URL SHOULD BE "http://localhost:4000/:hash" :hash = provide the value of url hash present in the DB 
 
 2. URLREDIRECTOR Controller Test Cases
 Test Case 1: Valid Hash - Successful Redirection
