@@ -3,7 +3,7 @@ const Url = require("../Models/Structure");
 
 // Validation of maxClicks over the URL
 const validateMaxClicks = (maxClicks) => {
-  if (maxClicks !== undefined && maxClicks !== null) {
+  if (maxClicks !== undefined && maxClicks !== null) { // if the maxclicks are declared infinite
     if (maxClicks <= 0) {
       return "The maxClick count should be a positive integer number";
     }
@@ -16,7 +16,7 @@ const validateExpiresAt = (expiresAt) => {
   if (expiresAt) {
     // Getting the actual date format for further assessment
     const date = new Date(expiresAt);
-    if (date <= new Date()) {
+    if (date <= new Date()) {  
       return "Expires date must be a future valid date";
     }
   }
@@ -25,6 +25,7 @@ const validateExpiresAt = (expiresAt) => {
 
 // URL size reducer controller
 const urlSizeReducer = async (req, res) => {
+  
   // Fetching the data from the request body
   const { originalurl, maxClicks, expiresAt } = req.body;
 
@@ -45,15 +46,15 @@ const urlSizeReducer = async (req, res) => {
   }
 
   const validatedExpiresAt = validateExpiresAt(expiresAt);
-  if (validatedExpiresAt) {
+  if (validatedExpiresAt) {                                
     return res.status(400).json({
       success: false,
       message: validatedExpiresAt,
     });
   }
 
-  // Generating a hash for the corresponding URL
-  // Followed by making the DB entry
+  // Generating a hash for the corresponding URL and mapping it corresponding to the url
+  // Followed by making the DB entry 
   const hash = generateHash();
   const urlEntry = new Url({
     originalurl,
@@ -70,38 +71,43 @@ const urlSizeReducer = async (req, res) => {
       shortUrl: `http://localhost:4000/${hash}`,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).
+      json(
+        { message: error.message });
   }
 };
 
 // URL Redirector Controller
 const urlRedirector = async (req, res) => {
+  // got the hash from the request call by the user
   const { hash } = req.params;
 
   try {
-    const urlData = await Url.findOne({ hash });
+    const urlData = await Url.findOne({ hash }); // checking for such entry in the DB
     if (!urlData) {
       return res.status(410).json({
         message: "No URL found",
       });
     }
 
-    if (urlData.expiresAt && new Date() > urlData.expiresAt) {
+    // validating that the url is still live to be used or not
+    if (urlData.expiresAt && new Date() > urlData.expiresAt) { 
       return res.status(410).json({
         message: "The URL is expired",
       });
     }
-
+    
     if (urlData.maxClicks !== null && urlData.clickCount >= urlData.maxClicks) {
       return res.status(410).json({
         message: "The URL access count limit has been exceeded",
       });
     }
 
+    // incase of maxClicks have not reached its limit than adding 1 to it
     urlData.clickCount += 1;
     await urlData.save();
 
-    // Redirecting the client to target URL corresponding to the hash number
+    // Redirecting the client to target URL linked webpage or website corresponding to the hash number
     return res.redirect(urlData.originalurl);
   } catch (error) {
     return res.status(500).json({
